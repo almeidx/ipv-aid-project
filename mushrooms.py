@@ -6,20 +6,18 @@ from sklearn.compose import ColumnTransformer
 from sklearn.metrics import accuracy_score
 
 def mushrooms(percentage, with_standard_scaler, with_one_hot_encoder, method='naive_bayes'):
-	db = pd.read_csv('./data/agaricus-lepiota.csv', header=None)
+	df = pd.read_csv('./data/agaricus-lepiota.csv')
 
-	db.loc[db[11] == '?', 11] = 'b'
+	df.loc[df['stalk-root'] == '?', 'stalk-root'] = df.loc[df['stalk-root'] != '?', 'stalk-root'].mode()[0]
 
-	descriptive = db.iloc[:, 1:].values
-	target = db.iloc[:, 0].values
+	descriptive = df.iloc[:, 1:].values
+	target = df.iloc[:, 0].values
 
 	labelEncoder = LabelEncoder()
+	for i in range(descriptive.shape[1]):
+		descriptive[:, i] = labelEncoder.fit_transform(descriptive[:, i])
 
 	if with_one_hot_encoder:
-		indices_to_encode = [0, 7, 16, 18]
-		for index in indices_to_encode:
-			descriptive[:, index] = labelEncoder.fit_transform(descriptive[:, index])
-
 		column_transformer = ColumnTransformer(
 			transformers=[(
 				'encoder',
@@ -29,30 +27,15 @@ def mushrooms(percentage, with_standard_scaler, with_one_hot_encoder, method='na
 			remainder='passthrough'
 		)
 		descriptive = column_transformer.fit_transform(descriptive)
-	else:
-		for i in range(descriptive.shape[1]):
-			descriptive[:, i] = labelEncoder.fit_transform(descriptive[:, i])
 
 	descriptive_train, descriptive_test, target_train, target_test = train_test_split(
 		descriptive, target, test_size=percentage, random_state=0, stratify=target
 	)
 
-	# descriptive_train = descriptive_train.toarray() if with_one_hot_encoder else descriptive_train
-	# descriptive_test = descriptive_test.toarray() if with_one_hot_encoder else descriptive_test
-
 	if with_standard_scaler:
 		standard_scaler = StandardScaler()
-		descriptive_train[:, 1:3] = standard_scaler.fit_transform(descriptive_train[:, 1:3])
-		descriptive_test[:, 1:3] = standard_scaler.transform(descriptive_test[:, 1:3])
-
-		descriptive_train[:, 5:7] = standard_scaler.fit_transform(descriptive_train[:, 5:7])
-		descriptive_test[:, 5:7] = standard_scaler.transform(descriptive_test[:, 5:7])
-
-		descriptive_train[:, 9:15] = standard_scaler.fit_transform(descriptive_train[:, 9:15])
-		descriptive_test[:, 9:15] = standard_scaler.transform(descriptive_test[:, 9:15])
-
-		descriptive_train[:, 17:] = standard_scaler.fit_transform(descriptive_train[:, 17:])
-		descriptive_test[:, 17:] = standard_scaler.transform(descriptive_test[:, 17:])
+		descriptive_train[:, :] = standard_scaler.fit_transform(descriptive_train[:, :])
+		descriptive_test[:, :] = standard_scaler.transform(descriptive_test[:, :])
 
 	match method:
 		case 'naive_bayes':

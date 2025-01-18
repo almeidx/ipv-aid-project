@@ -31,7 +31,7 @@ if dataset == "mushrooms":
 		for percentage in percentages:
 			row.append(mushrooms(percentage, scaler, encoder, method))
 		table.append(row)
-elif dataset == "loan":
+elif dataset == "loans":
 	from loans import loans
 
 	for config_name, scaler, encoder in configurations:
