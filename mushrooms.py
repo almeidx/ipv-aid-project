@@ -3,7 +3,7 @@ from sklearn.calibration import LabelEncoder
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 def mushrooms(percentage, with_standard_scaler, with_one_hot_encoder, method='naive_bayes'):
 	df = pd.read_csv('./data/agaricus-lepiota.csv')
@@ -22,7 +22,7 @@ def mushrooms(percentage, with_standard_scaler, with_one_hot_encoder, method='na
 			transformers=[(
 				'encoder',
 				OneHotEncoder(sparse_output=False),
-				(1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21)
+				[1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 17, 19, 20, 21]
 			)],
 			remainder='passthrough'
 		)
@@ -55,5 +55,6 @@ def mushrooms(percentage, with_standard_scaler, with_one_hot_encoder, method='na
 	prediction = classifier.predict(descriptive_test)
 
 	accuracy = accuracy_score(target_test, prediction)
+	matrix = confusion_matrix(target_test, prediction)
 
-	return accuracy
+	return accuracy, matrix
